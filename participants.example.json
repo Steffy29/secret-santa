@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Prénom Nom",
+    "email": "prenom.nom@example.com"
+  },
+  {
+    "name": "Autre Personne",
+    "email": "autre@example.com"
+  }
+]

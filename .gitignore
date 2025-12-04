@@ -1,0 +1,19 @@
+# Variables d'environnement sensibles
+.env
+
+# Liste des participants (données personnelles)
+participants.json
+
+# Emails preview
+email_preview_*.html
+
+# Dépendances Node.js
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Fichiers système
+.DS_Store
+Thumbs.db
