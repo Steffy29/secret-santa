@@ -1,0 +1,6 @@
+{
+    "2024": [
+      { "giver": "alice@example.com", "receiver": "bob@example.com" },
+      { "giver": "bob@example.com", "receiver": "claire@example.com" }
+    ]
+  }

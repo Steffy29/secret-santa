@@ -1,6 +1,9 @@
 # Variables d'environnement sensibles
 .env
 
+# Historique des tirages
+history.json
+
 # Liste des participants (données personnelles)
 participants.json
 

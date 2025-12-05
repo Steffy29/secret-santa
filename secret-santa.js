@@ -7,6 +7,123 @@ const fs = require('fs');
 const path = require('path');
 
 // ============================================
+// CHARGEMENT DE L'HISTORIQUE
+// ============================================
+
+function loadHistory() {
+  const historyPath = path.join(__dirname, 'history.json');
+  
+  if (!fs.existsSync(historyPath)) {
+    console.log('📝 Aucun historique trouvé - Création d\'un nouveau fichier');
+    return {};
+  }
+
+  try {
+    const data = fs.readFileSync(historyPath, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('⚠️  Erreur lors de la lecture de l\'historique :', error.message);
+    return {};
+  }
+}
+
+function saveHistory(assignments) {
+  const historyPath = path.join(__dirname, 'history.json');
+  const currentYear = new Date().getFullYear();
+  
+  const history = loadHistory();
+  
+  // Sauvegarde des attributions de cette année
+  history[currentYear] = assignments.map(a => ({
+    giver: a.giver.email,
+    receiver: a.receiver.email
+  }));
+  
+  try {
+    fs.writeFileSync(historyPath, JSON.stringify(history, null, 2), 'utf8');
+    console.log(`💾 Historique sauvegardé pour l'année ${currentYear}`);
+  } catch (error) {
+    console.error('⚠️  Erreur lors de la sauvegarde de l\'historique :', error.message);
+  }
+}
+
+// ============================================
+// ALGORITHME DE TIRAGE AU SORT
+// ============================================
+
+function performSecretSantaDraw(participants) {
+  if (participants.length < 3) {
+    throw new Error('Il faut au moins 3 participants pour le Secret Santa');
+  }
+
+  // Charger l'historique de l'année précédente
+  const history = loadHistory();
+  const lastYear = new Date().getFullYear() - 1;
+  const previousAssignments = history[lastYear] || [];
+  
+  // Créer un map pour accès rapide aux attributions précédentes
+  const previousPairs = new Map();
+  previousAssignments.forEach(pair => {
+    previousPairs.set(pair.giver, pair.receiver);
+  });
+  
+  if (previousPairs.size > 0) {
+    console.log(`📅 Historique de ${lastYear} chargé - ${previousPairs.size} attribution(s)`);
+  }
+
+  let attempts = 0;
+  const maxAttempts = 10000;
+  let validDraw = false;
+  let assignments = [];
+
+  while (!validDraw && attempts < maxAttempts) {
+    attempts++;
+    assignments = [];
+    const givers = [...participants];
+    const receivers = [...participants];
+    let tempReceivers = [...receivers];
+    validDraw = true;
+
+    for (let giver of givers) {
+      // Filtrer pour éviter de se tirer soi-même ET la même personne que l'année précédente
+      const previousReceiver = previousPairs.get(giver.email);
+      const availableReceivers = tempReceivers.filter(r => 
+        r.email !== giver.email && 
+        r.email !== previousReceiver
+      );
+      
+      if (availableReceivers.length === 0) {
+        validDraw = false;
+        break;
+      }
+
+      // Tirage aléatoire
+      const randomIndex = Math.floor(Math.random() * availableReceivers.length);
+      const receiver = availableReceivers[randomIndex];
+      
+      assignments.push({
+        giver: giver,
+        receiver: receiver
+      });
+
+      // Retirer le receiver de la liste
+      tempReceivers = tempReceivers.filter(r => r.email !== receiver.email);
+    }
+  }
+
+  if (!validDraw) {
+    throw new Error('Impossible de réaliser un tirage valide après ' + maxAttempts + ' tentatives');
+  }
+
+  console.log(`✅ Tirage réussi en ${attempts} tentative(s)`);
+  
+  // Sauvegarder l'historique
+  saveHistory(assignments);
+  
+  return assignments;
+}
+
+// ============================================
 // CHARGEMENT DES PARTICIPANTS
 // ============================================
 
